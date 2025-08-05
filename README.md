@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+CodeYog – A Coding Tapasya Platform
 
-## Getting Started
 
-First, run the development server:
+🧩 Features Breakdown
+👨‍💻 For Users:
+Signup / Login (NextAuth)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Browse problem sets by category / difficulty
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Code editor (Monaco / CodeMirror)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Language select dropdown
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+“Run” and “Submit” buttons
 
-## Learn More
+Get output / errors below
 
-To learn more about Next.js, take a look at the following resources:
+See explanations, hints if needed
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+🧑‍🏫 For Admin (YOU):
+Login to /admin/dashboard
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Add new problems (title, description, difficulty, test cases, tags)
 
-## Deploy on Vercel
+Edit existing problems
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+View submissions, activity
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+🔐 Backend:
+Next.js API Routes / or NestJS (for heavy processing)
+
+Use Dockerized Sandboxing or use JDoodle API / Piston API to run untrusted code
+
+MongoDB/PostgreSQL to store:
+
+Problems
+
+Test cases
+
+Users
+
+Submissions
+
+🛠 Tech Stack
+Part	Tech
+Frontend	Next.js + Tailwind + shadcn/ui
+Code Editor	Monaco Editor / CodeMirror
+Backend	Next.js API Routes or NestJS
+DB	MongoDB / PostgreSQL
+Auth	NextAuth.js (Google, GitHub, Email)
+Code Exec	Piston API / Docker sandbox
+Hosting	Vercel + Railway (or Render backend)
+
+✅ MVP Plan (Start Simple, Scale Fast)
+Phase 1: MVP
+ Auth (GitHub or Email)
+
+ User dashboard with list of coding problems
+
+ Admin dashboard to add problems
+
+ Code editor + Run (use Piston API)
+
+ View Output below editor
