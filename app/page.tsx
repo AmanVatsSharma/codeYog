@@ -1,3 +1,4 @@
+import { Goal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -26,7 +27,9 @@ export default function Home() {
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
           </p>
           <button className="bg-white text-black px-4 py-2 rounded-md" >
-            <Link href="/problems">Problems</Link>
+            <Link className="flex gap-3" href="/dashboard">
+            <Goal />
+            Go To Dashboard</Link>
           </button>
         </div>
       </div>
