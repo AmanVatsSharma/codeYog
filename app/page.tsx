@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { Code, Brain, Rocket, Goal } from 'lucide-react';
+import { useToast } from '@/components/ui/toast';
 
 export default function Home() {
+  const { show } = useToast();
   return (
     <AppShell withSidebar={false}>
       <div className="relative overflow-hidden rounded-2xl surface elevate px-8 py-16">
@@ -28,6 +30,9 @@ export default function Home() {
               </Button>
               <Button variant="secondary" asChild>
                 <Link href="/learning-path-tracker">Explore Learning Paths</Link>
+              </Button>
+              <Button variant="ghost" onClick={() => show({ title: 'Welcome to CodeYog', description: 'Explore features or jump into practice.', variant: 'success' })}>
+                Show Toast
               </Button>
             </div>
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">

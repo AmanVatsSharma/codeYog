@@ -3,11 +3,12 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { cn } from '@/components/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Code, LayoutDashboard, BookOpen, GraduationCap, Sun, Moon, Sparkles } from 'lucide-react';
+import { Code, LayoutDashboard, BookOpen, GraduationCap, Sun, Moon, Sparkles, Menu } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 type Props = {
@@ -39,6 +40,11 @@ export function AppShell({ children, withSidebar = true }: Props) {
             <Link href="/" className="text-lg font-semibold">CodeYog</Link>
           </div>
           <div className="flex items-center gap-2">
+            {withSidebar && (
+              <Button variant="ghost" size="icon" aria-label="Toggle navigation" onClick={() => setOpen((v) => !v)} className="md:hidden">
+                <Menu className="w-4 h-4" />
+              </Button>
+            )}
             <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               <Sun className="w-4 h-4 hidden dark:block" />
               <Moon className="w-4 h-4 block dark:hidden" />
@@ -49,9 +55,9 @@ export function AppShell({ children, withSidebar = true }: Props) {
       </header>
 
       {/* Main */}
-      <div className={cn('mx-auto w-full max-w-7xl grid gap-6 px-4 sm:px-6 lg:px-8 py-6', withSidebar ? 'grid-cols-[220px_1fr]' : 'grid-cols-1')}>
+      <div className={cn('mx-auto w-full max-w-7xl grid gap-6 px-4 sm:px-6 lg:px-8 py-6', withSidebar ? 'grid-cols-1 md:grid-cols-[220px_1fr]' : 'grid-cols-1')}>
         {withSidebar && (
-          <aside>
+          <aside className={cn('md:block', open ? 'block' : 'hidden')}>
             <nav className="space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -76,6 +82,13 @@ export function AppShell({ children, withSidebar = true }: Props) {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.18, ease: 'easeOut' }}
             >
+              <div className="mb-4">
+                <Breadcrumbs segments={pathname.split('/').filter(Boolean).reduce<{ href: string; label: string }[]>((acc, seg, idx, arr) => {
+                  const href = '/' + arr.slice(0, idx + 1).join('/');
+                  acc.push({ href, label: seg.replace(/-/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase()) });
+                  return acc;
+                }, [{ href: '/', label: 'Home' }])} />
+              </div>
               {children}
             </motion.div>
           </AnimatePresence>
