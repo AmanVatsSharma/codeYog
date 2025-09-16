@@ -1,39 +1,81 @@
-import { Goal } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+"use client";
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { AppShell } from '@/components/layout/AppShell';
+import { Code, Brain, Rocket, Goal } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="home w-full h-screen bg-gradient-to-r from-blue-500 to-purple-500">
-
-      <div className="header flex justify-between items-center gap-10 px-10 py-5 text-white shadow-lg rounded-lg mx-10 my-5 bg-gradient-to-r from-blue-500 to-purple-500">
-        <div className="logo text-white text-2xl font-bold">
-          <Image src="/logo.png" alt="logo" width={100} height={100} />
+    <AppShell withSidebar={false}>
+      <div className="relative overflow-hidden rounded-2xl surface elevate px-8 py-16">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-blue-500/20 blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-purple-500/20 blur-3xl" />
         </div>
-        <div className="nav flex gap-3 text-white">
-          <Link href="/">Home</Link>
-          <Link href="/about">About</Link>
-          <Link href="/contact">Contact</Link>
+
+        <div className="relative grid gap-10 lg:grid-cols-2 items-center">
+          <div>
+            <motion.h1 initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="text-4xl md:text-5xl font-bold tracking-tight">
+              Master Coding with AI-Powered Tapasya
+            </motion.h1>
+            <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.05 }} className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-xl">
+              A premium, modern platform to learn, practice, and grow with interactive problems, smart insights, and collaborative learning.
+            </motion.p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button asChild>
+                <Link href="/dashboard">Start Solving</Link>
+              </Button>
+              <Button variant="secondary" asChild>
+                <Link href="/learning-path-tracker">Explore Learning Paths</Link>
+              </Button>
+            </div>
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <div className="surface rounded-lg p-3">
+                <div className="text-gray-600 dark:text-gray-300">Problems</div>
+                <div className="text-xl font-semibold">1,000+</div>
+              </div>
+              <div className="surface rounded-lg p-3">
+                <div className="text-gray-600 dark:text-gray-300">Languages</div>
+                <div className="text-xl font-semibold">6+</div>
+              </div>
+              <div className="surface rounded-lg p-3">
+                <div className="text-gray-600 dark:text-gray-300">AI Insights</div>
+                <div className="text-xl font-semibold">Real-time</div>
+              </div>
+            </div>
+          </div>
+
+          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.35, delay: 0.05 }} className="relative">
+            <div className="aspect-video surface rounded-xl p-6">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <div className="w-2 h-2 rounded-full bg-green-500" />
+                <span>Live preview</span>
+              </div>
+              <div className="mt-4 grid gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/20 grid place-items-center">
+                    <Code className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div className="font-medium">Smart Editor</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-purple-500/20 grid place-items-center">
+                    <Brain className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div className="font-medium">AI Feedback</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 grid place-items-center">
+                    <Rocket className="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <div className="font-medium">Growth Paths</div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
-
-      <div className="content flex-col items-center justify-center gap-5 px-10 py-5">
-        <div className="hero flex flex-col items-center justify-center gap-5">
-          <h1 className="text-white text-4xl font-bold">Welcome to CodeYog</h1>
-          <p className="text-white text-2xl font-bold">
-            CodeYog is a platform for learning coding.
-          </p>
-          <p className="text-white text-2xl font-bold">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
-          </p>
-          <button className="bg-white text-black px-4 py-2 rounded-md" >
-            <Link className="flex gap-3" href="/dashboard">
-            <Goal />
-            Go To Dashboard</Link>
-          </button>
-        </div>
-      </div>
-
-    </div>
+    </AppShell>
   );
 }
