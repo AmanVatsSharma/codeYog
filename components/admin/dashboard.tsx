@@ -6,6 +6,7 @@ import {
   Globe, Code, Zap, Award, MessageSquare, Bell, Calendar,
   PieChart, Activity, Database, Shield, Cpu, Mail
 } from 'lucide-react';
+import { cn, colorToBg, colorToText } from '@/components/lib/utils';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -134,14 +135,12 @@ const AdminDashboard = () => {
           {change && (
             <div className={`flex items-center mt-2 ${change > 0 ? 'text-green-600' : 'text-red-600'}`}>
               <TrendingUp className="w-4 h-4 mr-1" />
-              <span className="text-sm font-medium">
-                {change > 0 ? '+' : ''}{change}% from last week
-              </span>
+              <span className="text-sm font-medium">{change > 0 ? '+' : ''}{change}% from last week</span>
             </div>
           )}
         </div>
-        <div className={`w-12 h-12 bg-${color}-100 rounded-lg flex items-center justify-center`}>
-          <Icon className={`w-6 h-6 text-${color}-600`} />
+        <div className={cn('w-12 h-12 rounded-lg flex items-center justify-center', colorToBg(color, 100))}>
+          <Icon className={cn('w-6 h-6', colorToText(color, 600))} />
         </div>
       </div>
     </div>
@@ -371,15 +370,12 @@ const AdminDashboard = () => {
                   {platformStats.topLanguages.map((lang, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-3 h-3 bg-${lang.color}-500 rounded-full`}></div>
+                        <div className={cn('w-3 h-3 rounded-full', colorToBg(lang.color, 500))}></div>
                         <span className="text-gray-900 font-medium">{lang.name}</span>
                       </div>
                       <div className="flex items-center space-x-3">
                         <div className="w-24 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className={`bg-${lang.color}-500 h-2 rounded-full`}
-                            style={{ width: `${lang.usage}%` }}
-                          ></div>
+                          <div className={cn('h-2 rounded-full', colorToBg(lang.color, 500))} style={{ width: `${lang.usage}%` }}></div>
                         </div>
                         <span className="text-sm text-gray-600 w-12 text-right">{lang.usage}%</span>
                       </div>
