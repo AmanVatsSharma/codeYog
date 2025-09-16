@@ -7,6 +7,7 @@ import {
   PieChart, Activity, Database, Shield, Cpu, Mail
 } from 'lucide-react';
 import { cn, colorToBg, colorToText } from '@/components/lib/utils';
+import type { LucideIcon } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -125,7 +126,16 @@ const AdminDashboard = () => {
     }
   });
 
-  const StatCard = ({ icon: Icon, title, value, subtitle, change, color = "blue" }) => (
+  type StatCardProps = {
+    icon: LucideIcon;
+    title: string;
+    value: string | number;
+    subtitle?: string;
+    change?: number;
+    color?: string;
+  };
+
+  const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, subtitle, change, color = "blue" }) => (
     <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
@@ -146,7 +156,21 @@ const AdminDashboard = () => {
     </div>
   );
 
-  const ProblemCard = ({ problem }) => (
+  type Problem = {
+    id: number;
+    title: string;
+    difficulty: string;
+    category: string;
+    tags: string[];
+    submissions: number;
+    successRate: number;
+    averageTime: number;
+    status: string;
+    createdAt: string;
+    lastModified: string;
+  };
+
+  const ProblemCard: React.FC<{ problem: Problem }> = ({ problem }) => (
     <div className="bg-white rounded-lg p-4 border border-gray-200 hover:border-gray-300 transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div>
@@ -210,7 +234,20 @@ const AdminDashboard = () => {
     </div>
   );
 
-  const UserRow = ({ user }) => (
+  type User = {
+    id: number;
+    name: string;
+    email: string;
+    level: number;
+    xp: number;
+    problemsSolved: number;
+    joinDate: string;
+    lastActive: string;
+    status: string;
+    subscription: string;
+  };
+
+  const UserRow: React.FC<{ user: User }> = ({ user }) => (
     <tr className="border-b border-gray-200 hover:bg-gray-50">
       <td className="px-4 py-3">
         <div className="flex items-center space-x-3">
@@ -580,4 +617,29 @@ const AdminDashboard = () => {
 
             {/* Content Gaps */}
             <div className="bg-white rounded-xl p-6 border border-gray-200">
-              <h3
+              <h3 className="font-semibold text-gray-900 mb-4">Content Gaps</h3>
+              <div className="space-y-3">
+                {aiInsights.contentGaps.map((gap, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-gray-900">{gap.concept}</h4>
+                      <span className="text-sm text-gray-600">{gap.currentProblems} / {gap.recommended}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-500 h-2 rounded-full"
+                        style={{ width: `${Math.min(100, (gap.currentProblems / gap.recommended) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;

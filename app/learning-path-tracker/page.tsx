@@ -11,8 +11,25 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { cn, colorToBg, colorToBorder } from '@/components/lib/utils';
 
+type PathId = 'data-structures' | 'algorithms' | 'competitive' | 'system-design';
+
+interface Concept {
+  id: string;
+  name: string;
+  description: string;
+  status: 'completed' | 'in-progress' | 'locked' | string;
+  difficulty: 'Easy' | 'Medium' | 'Hard' | string;
+  estimatedTime: string;
+  problems: number;
+  solvedProblems: number;
+  concepts: string[];
+  xpReward: number;
+  prerequisites: string[];
+  nextConcepts: string[];
+}
+
 const LearningPathTracker = () => {
-  const [selectedPath, setSelectedPath] = useState('data-structures');
+  const [selectedPath, setSelectedPath] = useState<PathId>('data-structures');
   const [userStats, setUserStats] = useState({
     totalXP: 2850,
     level: 12,
@@ -24,9 +41,9 @@ const LearningPathTracker = () => {
     focusAreas: ['Dynamic Programming', 'Graph Algorithms']
   });
 
-  const learningPaths = [
+  const learningPaths: LearningPath[] = [
     {
-      id: 'data-structures',
+      id: 'data-structures' as PathId,
       name: 'Data Structures Mastery',
       description: 'Master fundamental and advanced data structures',
       duration: '4-6 months',
@@ -37,7 +54,7 @@ const LearningPathTracker = () => {
       color: 'blue'
     },
     {
-      id: 'algorithms',
+      id: 'algorithms' as PathId,
       name: 'Algorithm Design',
       description: 'Learn algorithmic thinking and problem-solving patterns',
       duration: '5-7 months',
@@ -48,7 +65,7 @@ const LearningPathTracker = () => {
       color: 'purple'
     },
     {
-      id: 'competitive',
+      id: 'competitive' as PathId,
       name: 'Competitive Programming',
       description: 'Prepare for coding competitions and interviews',
       duration: '6-12 months',
@@ -59,7 +76,7 @@ const LearningPathTracker = () => {
       color: 'red'
     },
     {
-      id: 'system-design',
+      id: 'system-design' as PathId,
       name: 'System Design',
       description: 'Design scalable distributed systems',
       duration: '3-4 months',
@@ -71,7 +88,7 @@ const LearningPathTracker = () => {
     }
   ];
 
-  const pathConcepts = {
+  const pathConcepts: Record<PathId, Concept[]> = {
     'data-structures': [
       {
         id: 'arrays',
@@ -157,13 +174,16 @@ const LearningPathTracker = () => {
         prerequisites: ['heaps'],
         nextConcepts: ['advanced-structures']
       }
-    ]
+    ],
+    algorithms: [],
+    competitive: [],
+    'system-design': []
   };
 
-  const currentPath = learningPaths.find(path => path.id === selectedPath);
+  const currentPath = learningPaths.find(path => path.id === selectedPath)!;
   const currentConcepts = pathConcepts[selectedPath] || [];
 
-  const ConceptCard = ({ concept }) => {
+  const ConceptCard: React.FC<{ concept: Concept }> = ({ concept }) => {
     const getStatusIcon = () => {
       switch (concept.status) {
         case 'completed':
@@ -281,7 +301,19 @@ const LearningPathTracker = () => {
     );
   };
 
-  const PathProgressCard = ({ path }) => {
+  interface LearningPath {
+    id: PathId;
+    name: string;
+    description: string;
+    duration: string;
+    difficulty: 'Easy' | 'Intermediate' | 'Advanced' | 'Expert' | string;
+    prerequisites: string[];
+    totalConcepts: number;
+    completedConcepts: number;
+    color: string;
+  }
+
+  const PathProgressCard: React.FC<{ path: LearningPath }> = ({ path }) => {
     const progress = (path.completedConcepts / path.totalConcepts) * 100;
     const isSelected = selectedPath === path.id;
     const selectedBorder = colorToBorder(path.color, 300);

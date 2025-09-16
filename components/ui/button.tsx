@@ -2,17 +2,19 @@
 
 import * as React from 'react';
 import { motion } from 'framer-motion';
+import type { HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/components/lib/utils';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'destructive';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'color'> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  asChild?: boolean;
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
@@ -36,26 +38,42 @@ const sizeClasses: Record<ButtonSize, string> = {
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { className, variant = 'primary', size = 'md', loading = false, leftIcon, rightIcon, children, disabled, ...props },
+  { className, variant = 'primary', size = 'md', loading = false, leftIcon, rightIcon, children, disabled, asChild = false, ...props },
   ref
 ) {
+  const baseClasses = cn(
+    'inline-flex items-center justify-center gap-2 font-medium transition-all select-none',
+    'focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed',
+    variantClasses[variant],
+    sizeClasses[size],
+    className
+  );
+
+  if (asChild) {
+    return (
+      <motion.span
+        whileTap={{ scale: disabled || loading ? 1 : 0.98 }}
+        whileHover={{ y: disabled || loading ? 0 : -1 }}
+        className={baseClasses}
+      >
+        {leftIcon ? <span className={cn(size === 'sm' ? 'text-[0.9em]' : 'text-[1em]')}>{leftIcon}</span> : null}
+        <span className="truncate">{children as React.ReactNode}</span>
+        {rightIcon ? <span className={cn(size === 'sm' ? 'text-[0.9em]' : 'text-[1em]')}>{rightIcon}</span> : null}
+      </motion.span>
+    );
+  }
+
   return (
     <motion.button
       ref={ref}
       whileTap={{ scale: disabled || loading ? 1 : 0.98 }}
       whileHover={{ y: disabled || loading ? 0 : -1 }}
-      className={cn(
-        'inline-flex items-center justify-center gap-2 font-medium transition-all select-none',
-        'focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed',
-        variantClasses[variant],
-        sizeClasses[size],
-        className
-      )}
+      className={baseClasses}
       disabled={disabled || loading}
       {...props}
     >
       {leftIcon ? <span className={cn(size === 'sm' ? 'text-[0.9em]' : 'text-[1em]')}>{leftIcon}</span> : null}
-      <span className="truncate">{children}</span>
+      <span className="truncate">{children as React.ReactNode}</span>
       {rightIcon ? <span className={cn(size === 'sm' ? 'text-[0.9em]' : 'text-[1em]')}>{rightIcon}</span> : null}
     </motion.button>
   );

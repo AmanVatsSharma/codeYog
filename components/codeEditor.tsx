@@ -14,8 +14,23 @@ const AICodeEditor = () => {
     pass`);
   const [isRunning, setIsRunning] = useState(false);
   const [output, setOutput] = useState('');
-  const [testResults, setTestResults] = useState([]);
-  const [aiAnalysis, setAiAnalysis] = useState(null);
+  type TestResult = { id: number; input: string; expected: string; status: 'passed' | 'failed' | null | string; actualOutput?: string; executionTime?: number };
+  type Analysis = {
+    score: number;
+    grade: string;
+    codeQuality: { readability: number; efficiency: number; maintainability: number; bestPractices: number };
+    algorithmAnalysis: { approach: string; timeComplexity: string; spaceComplexity: string; isOptimal: boolean };
+    strengths: string[];
+    weaknesses: string[];
+    suggestions: { type: string; title: string; description: string; priority: 'low' | 'medium' | 'high' | string; codeExample?: string }[];
+    overallSummary: string;
+    conceptsUsed: string[];
+    conceptsToLearn: string[];
+    similarProblems: string[];
+  };
+
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [aiAnalysis, setAiAnalysis] = useState<Analysis | null>(null);
   const [showHints, setShowHints] = useState(false);
   const [currentProblem, setCurrentProblem] = useState({
     id: 1,
@@ -42,7 +57,8 @@ const AICodeEditor = () => {
   });
 
   const [activeTab, setActiveTab] = useState('problem');
-  const [submissionHistory, setSubmissionHistory] = useState([]);
+  type Submission = { id: number; timestamp: Date; language: string; code: string; score: number; status: string };
+  const [submissionHistory, setSubmissionHistory] = useState<Submission[]>([]);
 
   const languages = [
     { id: 'python', name: 'Python', version: '3.9' },
@@ -81,7 +97,7 @@ const AICodeEditor = () => {
     }, 2000);
   };
 
-  const generateAIAnalysis = (results) => {
+  const generateAIAnalysis = (results: TestResult[]) => {
     const passedTests = results.filter(r => r.status === 'passed').length;
     const totalTests = results.length;
     const score = Math.floor((passedTests / totalTests) * 100);
@@ -145,13 +161,13 @@ const AICodeEditor = () => {
       language: selectedLanguage,
       code: code,
       score: aiAnalysis?.score || 0,
-      status: aiAnalysis?.score >= 70 ? 'Accepted' : 'Wrong Answer'
+      status: ((aiAnalysis?.score ?? 0) >= 70) ? 'Accepted' : 'Wrong Answer'
     };
     
     setSubmissionHistory([newSubmission, ...submissionHistory]);
   };
 
-  const QualityBar = ({ label, value, color = "blue" }) => (
+  const QualityBar: React.FC<{ label: string; value: number; color?: string }> = ({ label, value, color = "blue" }) => (
     <div className="mb-3">
       <div className="flex justify-between text-sm mb-1">
         <span className="text-gray-600">{label}</span>
