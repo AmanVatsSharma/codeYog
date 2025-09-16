@@ -76,6 +76,30 @@ export default function Home() {
           </motion.div>
         </div>
       </div>
+
+      <div className="mt-10 grid gap-6 md:grid-cols-3">
+        {[{
+          title: 'Enterprise-Grade Reliability',
+          desc: 'Robust UI and flows designed for scale and performance.',
+          icon: <Rocket className="w-5 h-5" />
+        }, {
+          title: 'AI Guidance',
+          desc: 'Personalized insights to accelerate your growth.',
+          icon: <Brain className="w-5 h-5" />
+        }, {
+          title: 'Developer-Centric',
+          desc: 'Keyboard-first, elegant, and consistent experiences.',
+          icon: <Code className="w-5 h-5" />
+        }].map((f, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 6 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.25, delay: 0.05 * i }} className="surface rounded-xl p-6">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 text-white grid place-items-center">
+              {f.icon}
+            </div>
+            <div className="mt-3 text-lg font-semibold">{f.title}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">{f.desc}</div>
+          </motion.div>
+        ))}
+      </div>
     </AppShell>
   );
 }
