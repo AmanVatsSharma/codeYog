@@ -5,6 +5,11 @@ import {
   Award, Calendar, Zap, BookOpen, ChevronRight,
   Star, Medal, Flame, Users, BarChart3, Play
 } from 'lucide-react';
+import Layout from '@/components/layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 const CodeYogDashboard = () => {
   const [user, setUser] = useState({
@@ -132,41 +137,9 @@ const CodeYogDashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-                  <Code className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">CodeYog</h1>
-                  <p className="text-sm text-gray-600">Your AI Coding Companion</p>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Flame className="w-5 h-5 text-orange-500" />
-                <span className="font-medium text-gray-900">{user.currentStreak} days</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full" />
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                  <p className="text-xs text-gray-600">Level {user.level} • {user.rank}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <Layout user={user} activeTab={activeTab}>
       {/* Navigation Tabs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="mb-8">
         <div className="border-b border-gray-200 mb-6">
           <nav className="-mb-px flex space-x-8">
             {[
@@ -175,18 +148,19 @@ const CodeYogDashboard = () => {
               { id: 'progress', name: 'Progress', icon: TrendingUp },
               { id: 'ai-coach', name: 'AI Coach', icon: Brain }
             ].map(({ id, name, icon: Icon }) => (
-              <button
+              <Button
                 key={id}
+                variant={activeTab === id ? "default" : "ghost"}
                 onClick={() => setActiveTab(id)}
-                className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`flex items-center space-x-2 py-2 px-4 border-b-2 font-medium text-sm ${
                   activeTab === id
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-blue-500 text-blue-600 bg-blue-50'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{name}</span>
-              </button>
+              </Button>
             ))}
           </nav>
         </div>
@@ -500,7 +474,7 @@ const CodeYogDashboard = () => {
           </div>
         )}
       </div>
-    </div>
+    </Layout>
   );
 };
 
