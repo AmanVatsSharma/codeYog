@@ -178,7 +178,24 @@ const CollaborativeLearningHub = () => {
     }
   ]);
 
-  const StudyGroupCard = ({ group }) => (
+  type StudyGroup = {
+    id: number;
+    name: string;
+    description: string;
+    members: number;
+    maxMembers: number;
+    difficulty: string;
+    topics: string[];
+    nextSession: string;
+    isLive: boolean;
+    language: string;
+    memberAvatars: string[];
+    progress: number;
+    created: string;
+    category: string;
+  };
+
+  const StudyGroupCard: React.FC<{ group: StudyGroup }> = ({ group }) => (
     <div className="bg-white rounded-xl p-6 border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-200 cursor-pointer">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
@@ -264,7 +281,21 @@ const CollaborativeLearningHub = () => {
     </div>
   );
 
-  const PeerSessionCard = ({ session }) => (
+  type PeerSession = {
+    id: number;
+    title: string;
+    host: string;
+    hostAvatar: string;
+    participants: number;
+    duration: string;
+    scheduledTime: string;
+    status: 'live' | 'upcoming' | string;
+    topics: string[];
+    difficulty: string;
+    type: string;
+  };
+
+  const PeerSessionCard: React.FC<{ session: PeerSession }> = ({ session }) => (
     <div className="bg-white rounded-lg p-4 border border-gray-200 hover:border-gray-300 transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
@@ -285,4 +316,171 @@ const CollaborativeLearningHub = () => {
         </div>
       </div>
 
-      <div
+      <div className="text-sm text-gray-600">
+        <div className="flex items-center justify-between">
+          <span>{session.type}</span>
+          <span>{session.duration}</span>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {session.topics.map((t, i) => (
+            <span key={i} className="px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-xs">{t}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  type LeaderboardEntry = {
+    rank: number;
+    name: string;
+    avatar: string;
+    points: number;
+    problemsSolved: number;
+    helpfulAnswers: number;
+    badges: string[];
+  };
+
+  const LeaderboardCard: React.FC<{ entry: LeaderboardEntry }> = ({ entry }) => (
+    <div className="bg-white rounded-lg p-4 border border-gray-200 hover:border-gray-300 transition-colors">
+      <div className="flex items-center space-x-3 mb-3">
+        <span className="text-2xl font-bold text-gray-900">{entry.rank}</span>
+        <img src={entry.avatar} alt={entry.name} className="w-10 h-10 rounded-full" />
+        <div>
+          <h4 className="font-semibold text-gray-900">{entry.name}</h4>
+          <p className="text-sm text-gray-600">Points: {entry.points}</p>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {entry.badges.map((badge, index) => (
+          <span key={index} className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">{badge}</span>
+        ))}
+      </div>
+    </div>
+  );
+
+  type Discussion = {
+    id: number;
+    title: string;
+    author: string;
+    authorAvatar: string;
+    replies: number;
+    likes: number;
+    views: number;
+    timeAgo: string;
+    tags: string[];
+    isAnswered: boolean;
+    difficulty: string;
+  };
+
+  const DiscussionCard: React.FC<{ discussion: Discussion }> = ({ discussion }) => (
+    <div className="bg-white rounded-lg p-4 border border-gray-200 hover:border-gray-300 transition-colors">
+      <div className="flex items-center space-x-2 mb-3">
+        <img src={discussion.authorAvatar} alt={discussion.author} className="w-5 h-5 rounded-full" />
+        <span className="text-sm text-gray-600">{discussion.author}</span>
+        <span className="text-xs text-gray-500">{discussion.timeAgo}</span>
+      </div>
+      <h3 className="font-semibold text-gray-900">{discussion.title}</h3>
+      <div className="flex flex-wrap gap-2 mt-2">
+        {discussion.tags.map((tag, index) => (
+          <span key={index} className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-xs">{tag}</span>
+        ))}
+      </div>
+      <div className="flex items-center space-x-2 mt-3 text-sm text-gray-600">
+        <Users className="w-4 h-4" />
+        <span>{discussion.replies} replies</span>
+        <ThumbsUp className="w-4 h-4" />
+        <span>{discussion.likes} likes</span>
+        <Eye className="w-4 h-4" />
+        <span>{discussion.views} views</span>
+      </div>
+      <div className="flex items-center space-x-2 mt-3 text-sm text-gray-600">
+        <span className={`px-2 py-0.5 rounded-full ${
+          discussion.isAnswered ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+        }`}>
+          {discussion.isAnswered ? 'Answered' : 'Unanswered'}
+        </span>
+        <span className={`px-2 py-0.5 rounded-full ${
+          discussion.difficulty === 'Easy' ? 'bg-green-100 text-green-700' :
+          discussion.difficulty === 'Advanced' ? 'bg-orange-100 text-orange-700' :
+          'bg-blue-100 text-blue-700'
+        }`}>
+          {discussion.difficulty}
+        </span>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-4">Collaborative Learning Hub</h1>
+      <div className="flex space-x-4 mb-4">
+        <button
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'study-groups' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
+          }`}
+          onClick={() => setActiveTab('study-groups')}
+        >
+          Study Groups
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'peer-sessions' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
+          }`}
+          onClick={() => setActiveTab('peer-sessions')}
+        >
+          Peer Sessions
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'leaderboard' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
+          }`}
+          onClick={() => setActiveTab('leaderboard')}
+        >
+          Leaderboard
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'discussions' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
+          }`}
+          onClick={() => setActiveTab('discussions')}
+        >
+          Discussions
+        </button>
+      </div>
+
+      {activeTab === 'study-groups' && (
+        <div className="grid gap-6">
+          {studyGroups.map(group => (
+            <StudyGroupCard key={group.id} group={group} />
+          ))}
+        </div>
+      )}
+
+      {activeTab === 'peer-sessions' && (
+        <div className="grid gap-6">
+          {peerSessions.map(session => (
+            <PeerSessionCard key={session.id} session={session} />
+          ))}
+        </div>
+      )}
+
+      {activeTab === 'leaderboard' && (
+        <div className="grid gap-6">
+          {leaderboard.map(entry => (
+            <LeaderboardCard key={entry.rank} entry={entry} />
+          ))}
+        </div>
+      )}
+
+      {activeTab === 'discussions' && (
+        <div className="grid gap-6">
+          {discussions.map(discussion => (
+            <DiscussionCard key={discussion.id} discussion={discussion} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CollaborativeLearningHub;

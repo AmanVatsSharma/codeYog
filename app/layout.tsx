@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AppThemeProvider } from "@/components/providers/theme-provider";
+import { ToastProvider } from "@/components/ui/toast";
+import { CommandPalette } from "@/components/ui/command-palette";
 
 export const metadata: Metadata = {
   title: "CodeYog",
@@ -13,8 +16,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="w-full h-screen bg-black text-white">
-        {children}
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <AppThemeProvider>
+          <ToastProvider>
+            <CommandPalette />
+            {children}
+          </ToastProvider>
+        </AppThemeProvider>
       </body>
     </html>
   );

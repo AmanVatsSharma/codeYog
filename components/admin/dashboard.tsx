@@ -6,6 +6,8 @@ import {
   Globe, Code, Zap, Award, MessageSquare, Bell, Calendar,
   PieChart, Activity, Database, Shield, Cpu, Mail
 } from 'lucide-react';
+import { cn, colorToBg, colorToText } from '@/components/lib/utils';
+import type { LucideIcon } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -124,7 +126,16 @@ const AdminDashboard = () => {
     }
   });
 
-  const StatCard = ({ icon: Icon, title, value, subtitle, change, color = "blue" }) => (
+  type StatCardProps = {
+    icon: LucideIcon;
+    title: string;
+    value: string | number;
+    subtitle?: string;
+    change?: number;
+    color?: string;
+  };
+
+  const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, subtitle, change, color = "blue" }) => (
     <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
@@ -134,20 +145,32 @@ const AdminDashboard = () => {
           {change && (
             <div className={`flex items-center mt-2 ${change > 0 ? 'text-green-600' : 'text-red-600'}`}>
               <TrendingUp className="w-4 h-4 mr-1" />
-              <span className="text-sm font-medium">
-                {change > 0 ? '+' : ''}{change}% from last week
-              </span>
+              <span className="text-sm font-medium">{change > 0 ? '+' : ''}{change}% from last week</span>
             </div>
           )}
         </div>
-        <div className={`w-12 h-12 bg-${color}-100 rounded-lg flex items-center justify-center`}>
-          <Icon className={`w-6 h-6 text-${color}-600`} />
+        <div className={cn('w-12 h-12 rounded-lg flex items-center justify-center', colorToBg(color, 100))}>
+          <Icon className={cn('w-6 h-6', colorToText(color, 600))} />
         </div>
       </div>
     </div>
   );
 
-  const ProblemCard = ({ problem }) => (
+  type Problem = {
+    id: number;
+    title: string;
+    difficulty: string;
+    category: string;
+    tags: string[];
+    submissions: number;
+    successRate: number;
+    averageTime: number;
+    status: string;
+    createdAt: string;
+    lastModified: string;
+  };
+
+  const ProblemCard: React.FC<{ problem: Problem }> = ({ problem }) => (
     <div className="bg-white rounded-lg p-4 border border-gray-200 hover:border-gray-300 transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div>
@@ -211,7 +234,20 @@ const AdminDashboard = () => {
     </div>
   );
 
-  const UserRow = ({ user }) => (
+  type User = {
+    id: number;
+    name: string;
+    email: string;
+    level: number;
+    xp: number;
+    problemsSolved: number;
+    joinDate: string;
+    lastActive: string;
+    status: string;
+    subscription: string;
+  };
+
+  const UserRow: React.FC<{ user: User }> = ({ user }) => (
     <tr className="border-b border-gray-200 hover:bg-gray-50">
       <td className="px-4 py-3">
         <div className="flex items-center space-x-3">
@@ -371,15 +407,12 @@ const AdminDashboard = () => {
                   {platformStats.topLanguages.map((lang, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-3 h-3 bg-${lang.color}-500 rounded-full`}></div>
+                        <div className={cn('w-3 h-3 rounded-full', colorToBg(lang.color, 500))}></div>
                         <span className="text-gray-900 font-medium">{lang.name}</span>
                       </div>
                       <div className="flex items-center space-x-3">
                         <div className="w-24 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className={`bg-${lang.color}-500 h-2 rounded-full`}
-                            style={{ width: `${lang.usage}%` }}
-                          ></div>
+                          <div className={cn('h-2 rounded-full', colorToBg(lang.color, 500))} style={{ width: `${lang.usage}%` }}></div>
                         </div>
                         <span className="text-sm text-gray-600 w-12 text-right">{lang.usage}%</span>
                       </div>
@@ -584,4 +617,29 @@ const AdminDashboard = () => {
 
             {/* Content Gaps */}
             <div className="bg-white rounded-xl p-6 border border-gray-200">
-              <h3
+              <h3 className="font-semibold text-gray-900 mb-4">Content Gaps</h3>
+              <div className="space-y-3">
+                {aiInsights.contentGaps.map((gap, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-gray-900">{gap.concept}</h4>
+                      <span className="text-sm text-gray-600">{gap.currentProblems} / {gap.recommended}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-500 h-2 rounded-full"
+                        style={{ width: `${Math.min(100, (gap.currentProblems / gap.recommended) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;
