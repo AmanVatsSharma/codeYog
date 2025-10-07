@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-// Mock database - in production, this would be replaced with actual database calls
+// Keeping mock data as fallback
 const mockProblems = [
   {
     id: 1,
@@ -148,37 +149,62 @@ export async function GET(request: NextRequest) {
     const tag = searchParams.get('tag');
     const search = searchParams.get('search');
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = parseInt(searchParams.get('limit') || '20');
 
-    let filtered = [...mockProblems];
-
-    // Apply filters
+    // Build where clause
+    const where: any = {};
+    
     if (difficulty) {
-      filtered = filtered.filter(p => p.difficulty.toLowerCase() === difficulty.toLowerCase());
+      where.difficulty = difficulty;
     }
     if (category) {
-      filtered = filtered.filter(p => p.category.toLowerCase() === category.toLowerCase());
-    }
-    if (tag) {
-      filtered = filtered.filter(p => p.tags.some(t => t.toLowerCase() === tag.toLowerCase()));
+      where.category = { contains: category };
     }
     if (search) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.title.toLowerCase().includes(searchLower) ||
-        p.description.toLowerCase().includes(searchLower)
-      );
+      where.OR = [
+        { title: { contains: search } },
+        { description: { contains: search } },
+      ];
     }
 
-    // Pagination
-    const total = filtered.length;
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginated = filtered.slice(startIndex, endIndex);
+    // Get total count
+    const total = await prisma.problem.count({ where });
+
+    // Get problems with pagination
+    const problems = await prisma.problem.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        difficulty: true,
+        category: true,
+        tags: true,
+        companies: true,
+        acceptanceRate: true,
+        totalSubmissions: true,
+        totalAccepted: true,
+        likes: true,
+        dislikes: true,
+        createdAt: true,
+      },
+      orderBy: {
+        totalSubmissions: 'desc'
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    // Parse JSON fields
+    const formattedProblems = problems.map(p => ({
+      ...p,
+      tags: JSON.parse(p.tags),
+      companies: JSON.parse(p.companies),
+    }));
 
     return NextResponse.json({
       success: true,
-      problems: paginated,
+      problems: formattedProblems,
       pagination: {
         page,
         limit,
@@ -197,29 +223,62 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const problem = await request.json();
-    
-    // In production, this would save to database
-    const newProblem = {
-      ...problem,
-      id: mockProblems.length + 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      totalSubmissions: 0,
-      totalAccepted: 0,
-      likes: 0,
-      dislikes: 0,
-      acceptanceRate: 0,
-    };
+    const problemData = await request.json();
+    const {
+      title,
+      description,
+      difficulty,
+      category,
+      tags,
+      companies,
+      examples,
+      constraints,
+      hints,
+      testCases,
+      starterCode,
+    } = problemData;
 
-    mockProblems.push(newProblem);
+    // Generate slug from title
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    // Create problem in database
+    const problem = await prisma.problem.create({
+      data: {
+        title,
+        slug,
+        description,
+        difficulty,
+        category,
+        tags: JSON.stringify(tags || []),
+        companies: JSON.stringify(companies || []),
+        examples: JSON.stringify(examples || []),
+        constraints: JSON.stringify(constraints || []),
+        hints: JSON.stringify(hints || []),
+        testCases: JSON.stringify(testCases || []),
+        starterCode: JSON.stringify(starterCode || {}),
+        totalSubmissions: 0,
+        totalAccepted: 0,
+        acceptanceRate: 0,
+        likes: 0,
+        dislikes: 0,
+      }
+    });
 
     return NextResponse.json({
       success: true,
-      problem: newProblem,
+      problem,
+      message: 'Problem created successfully',
     }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating problem:', error);
+    
+    if (error.code === 'P2002') {
+      return NextResponse.json(
+        { success: false, error: 'Problem with this title already exists' },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
       { success: false, error: 'Failed to create problem' },
       { status: 500 }

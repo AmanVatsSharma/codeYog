@@ -1,36 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Mock submissions data
-const mockSubmissions = [
-  {
-    id: 1,
-    problemId: 1,
-    userId: 'user123',
-    code: 'def two_sum(nums, target):\n    hash_map = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in hash_map:\n            return [hash_map[complement], i]\n        hash_map[num] = i\n    return []',
-    language: 'python',
-    status: 'Accepted',
-    runtime: 45,
-    memory: 15.2,
-    testsPassed: 4,
-    totalTests: 4,
-    score: 100,
-    submittedAt: '2024-02-10T14:30:00Z',
-  },
-  {
-    id: 2,
-    problemId: 1,
-    userId: 'user123',
-    code: 'def two_sum(nums, target):\n    for i in range(len(nums)):\n        for j in range(i+1, len(nums)):\n            if nums[i] + nums[j] == target:\n                return [i, j]\n    return []',
-    language: 'python',
-    status: 'Wrong Answer',
-    runtime: 1250,
-    memory: 14.8,
-    testsPassed: 3,
-    totalTests: 4,
-    score: 75,
-    submittedAt: '2024-02-10T14:15:00Z',
-  },
-];
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,31 +10,45 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    let filtered = [...mockSubmissions];
+    // Build where clause
+    const where: any = {};
+    if (problemId) where.problemId = problemId;
+    if (userId) where.userId = userId;
+    if (status) where.status = status;
 
-    // Apply filters
-    if (problemId) {
-      filtered = filtered.filter(s => s.problemId === parseInt(problemId));
-    }
-    if (userId) {
-      filtered = filtered.filter(s => s.userId === userId);
-    }
-    if (status) {
-      filtered = filtered.filter(s => s.status === status);
-    }
+    // Get total count
+    const total = await prisma.submission.count({ where });
 
-    // Sort by submission time (newest first)
-    filtered.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
-
-    // Pagination
-    const total = filtered.length;
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginated = filtered.slice(startIndex, endIndex);
+    // Get submissions with pagination
+    const submissions = await prisma.submission.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            avatar: true,
+          }
+        },
+        problem: {
+          select: {
+            id: true,
+            title: true,
+            difficulty: true,
+          }
+        }
+      },
+      orderBy: {
+        submittedAt: 'desc'
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
 
     return NextResponse.json({
       success: true,
-      submissions: paginated,
+      submissions,
       pagination: {
         page,
         limit,
@@ -94,42 +77,94 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // In production, this would:
-    // 1. Save submission to database
-    // 2. Queue for evaluation
-    // 3. Run test cases
-    // 4. Update user statistics
+    // Verify user and problem exist
+    const [user, problem] = await Promise.all([
+      prisma.user.findUnique({ where: { id: userId } }),
+      prisma.problem.findUnique({ where: { id: problemId } })
+    ]);
 
-    const newSubmission = {
-      id: mockSubmissions.length + 1,
-      problemId,
-      userId,
-      code,
-      language,
-      status: 'Pending',
-      runtime: 0,
-      memory: 0,
-      testsPassed: 0,
-      totalTests: 0,
-      score: 0,
-      submittedAt: new Date().toISOString(),
-    };
+    if (!user || !problem) {
+      return NextResponse.json(
+        { success: false, error: 'User or problem not found' },
+        { status: 404 }
+      );
+    }
 
-    // Simulate async evaluation
-    setTimeout(() => {
-      // Run test cases and update status
-      const status = Math.random() > 0.3 ? 'Accepted' : 'Wrong Answer';
-      const runtime = Math.floor(Math.random() * 100) + 10;
-      const memory = Math.random() * 10 + 10;
-      const testsPassed = Math.floor(Math.random() * 4) + 1;
-      const totalTests = 4;
-      const score = (testsPassed / totalTests) * 100;
-      
-      // Update the submission (in production, this would update the database)
-      Object.assign(newSubmission, { status, runtime, memory, testsPassed, totalTests, score });
+    // Create submission
+    const newSubmission = await prisma.submission.create({
+      data: {
+        userId,
+        problemId,
+        code,
+        language,
+        status: 'Pending',
+        runtime: 0,
+        memory: 0,
+        testsPassed: 0,
+        totalTests: 4,
+        score: 0,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+          }
+        },
+        problem: {
+          select: {
+            id: true,
+            title: true,
+            difficulty: true,
+          }
+        }
+      }
+    });
+
+    // Simulate async evaluation (in production, use a job queue)
+    setTimeout(async () => {
+      try {
+        const status = Math.random() > 0.3 ? 'Accepted' : 'Wrong Answer';
+        const runtime = Math.floor(Math.random() * 100) + 10;
+        const memory = Math.random() * 10 + 10;
+        const testsPassed = Math.floor(Math.random() * 4) + 1;
+        const score = (testsPassed / 4) * 100;
+
+        await prisma.submission.update({
+          where: { id: newSubmission.id },
+          data: {
+            status,
+            runtime,
+            memory: parseFloat(memory.toFixed(2)),
+            testsPassed,
+            score,
+          }
+        });
+
+        // Update user XP and streak if accepted
+        if (status === 'Accepted') {
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              xp: { increment: 10 },
+              lastActiveDate: new Date(),
+            }
+          });
+        }
+
+        // Update problem statistics
+        await prisma.problem.update({
+          where: { id: problemId },
+          data: {
+            totalSubmissions: { increment: 1 },
+            totalAccepted: status === 'Accepted' ? { increment: 1 } : undefined,
+          }
+        });
+      } catch (error) {
+        console.error('Error updating submission:', error);
+      }
     }, 2000);
-
-    mockSubmissions.unshift(newSubmission);
 
     return NextResponse.json({
       success: true,

@@ -1,0 +1,391 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id                String          @id @default(cuid())
+  email             String          @unique
+  username          String          @unique
+  name              String?
+  password          String
+  avatar            String?
+  bio               String?
+  location          String?
+  website           String?
+  github            String?
+  linkedin          String?
+  twitter           String?
+  
+  // Stats
+  level             Int             @default(1)
+  xp                Int             @default(0)
+  rank              String          @default("Bronze")
+  reputation        Int             @default(0)
+  streak            Int             @default(0)
+  longestStreak     Int             @default(0)
+  lastActiveDate    DateTime?
+  
+  // Preferences
+  preferredLanguage String          @default("python")
+  theme             String          @default("dark")
+  emailNotifications Boolean        @default(true)
+  
+  // Timestamps
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  // Relations
+  submissions       Submission[]
+  contests          ContestParticipant[]
+  comments          Comment[]
+  discussions       Discussion[]
+  bookmarks         Bookmark[]
+  achievements      UserAchievement[]
+  followers         Follow[]        @relation("Following")
+  following         Follow[]        @relation("Followers")
+  notifications     Notification[]
+  sessions          Session[]
+  
+  @@index([email])
+  @@index([username])
+}
+
+// Session model for authentication
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+// Problem model
+model Problem {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  description     String
+  difficulty      String        // Easy, Medium, Hard
+  category        String
+  tags            String        // JSON array as string
+  companies       String        // JSON array as string
+  
+  // Problem details
+  examples        String        // JSON array as string
+  constraints     String        // JSON array as string
+  hints           String        // JSON array as string
+  testCases       String        // JSON array as string
+  starterCode     String        // JSON object as string
+  solution        String?       // Editorial solution
+  
+  // Statistics
+  totalSubmissions Int          @default(0)
+  totalAccepted    Int          @default(0)
+  acceptanceRate   Float        @default(0)
+  likes            Int          @default(0)
+  dislikes         Int          @default(0)
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Relations
+  submissions     Submission[]
+  bookmarks       Bookmark[]
+  discussions     Discussion[]
+  
+  @@index([slug])
+  @@index([difficulty])
+  @@index([category])
+}
+
+// Submission model
+model Submission {
+  id              String        @id @default(cuid())
+  userId          String
+  problemId       String
+  code            String
+  language        String
+  status          String        // Accepted, Wrong Answer, Time Limit Exceeded, etc.
+  runtime         Int?
+  memory          Float?
+  testsPassed     Int           @default(0)
+  totalTests      Int           @default(0)
+  score           Int           @default(0)
+  
+  // AI Analysis
+  aiAnalysis      String?       // JSON object as string
+  
+  // Timestamps
+  submittedAt     DateTime      @default(now())
+  
+  // Relations
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem         Problem       @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([problemId])
+  @@index([status])
+}
+
+// Contest model
+model Contest {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  description     String
+  type            String        // weekly, biweekly, special
+  status          String        // upcoming, live, past
+  difficulty      String
+  
+  // Timing
+  startTime       DateTime
+  endTime         DateTime
+  duration        Int           // in minutes
+  
+  // Details
+  problems        String        // JSON array as string
+  prizes          String        // JSON array as string
+  rules           String        // JSON array as string
+  
+  // Statistics
+  participants    Int           @default(0)
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Relations
+  contestParticipants ContestParticipant[]
+  
+  @@index([slug])
+  @@index([status])
+  @@index([startTime])
+}
+
+// Contest Participant model
+model ContestParticipant {
+  id          String        @id @default(cuid())
+  userId      String
+  contestId   String
+  rank        Int?
+  score       Int           @default(0)
+  problems    String        // JSON array as string (problems solved)
+  timeSpent   Int           @default(0) // in minutes
+  
+  // Timestamps
+  joinedAt    DateTime      @default(now())
+  
+  // Relations
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contest     Contest       @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, contestId])
+  @@index([contestId])
+  @@index([rank])
+}
+
+// Discussion model
+model Discussion {
+  id              String        @id @default(cuid())
+  authorId        String
+  problemId       String?
+  type            String        // question, article, discussion
+  title           String
+  content         String
+  tags            String        // JSON array as string
+  difficulty      String?
+  
+  // Status
+  isAnswered      Boolean       @default(false)
+  isPinned        Boolean       @default(false)
+  isLocked        Boolean       @default(false)
+  
+  // Statistics
+  views           Int           @default(0)
+  likes           Int           @default(0)
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Relations
+  author          User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  problem         Problem?      @relation(fields: [problemId], references: [id], onDelete: SetNull)
+  comments        Comment[]
+  
+  @@index([authorId])
+  @@index([problemId])
+  @@index([type])
+}
+
+// Comment model
+model Comment {
+  id              String        @id @default(cuid())
+  authorId        String
+  discussionId    String
+  parentId        String?       // For nested comments
+  content         String
+  
+  // Statistics
+  likes           Int           @default(0)
+  isAccepted      Boolean       @default(false) // For answers
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Relations
+  author          User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  discussion      Discussion    @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  parent          Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies         Comment[]     @relation("CommentReplies")
+  
+  @@index([authorId])
+  @@index([discussionId])
+  @@index([parentId])
+}
+
+// Bookmark model
+model Bookmark {
+  id          String        @id @default(cuid())
+  userId      String
+  problemId   String
+  notes       String?
+  
+  // Timestamps
+  createdAt   DateTime      @default(now())
+  
+  // Relations
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem     Problem       @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, problemId])
+  @@index([userId])
+}
+
+// Achievement model
+model Achievement {
+  id              String        @id @default(cuid())
+  name            String        @unique
+  description     String
+  icon            String
+  category        String        // problem_solving, streak, contest, community
+  requirement     Int           // Threshold to unlock
+  points          Int           @default(0)
+  
+  // Relations
+  users           UserAchievement[]
+}
+
+// User Achievement (join table)
+model UserAchievement {
+  id              String        @id @default(cuid())
+  userId          String
+  achievementId   String
+  unlockedAt      DateTime      @default(now())
+  
+  // Relations
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement     Achievement   @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, achievementId])
+  @@index([userId])
+}
+
+// Follow model (for following users)
+model Follow {
+  id          String        @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime      @default(now())
+  
+  // Relations
+  follower    User          @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User          @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+  
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+// Notification model
+model Notification {
+  id          String        @id @default(cuid())
+  userId      String
+  type        String        // comment, like, achievement, contest, etc.
+  title       String
+  message     String
+  link        String?
+  isRead      Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  
+  // Relations
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([isRead])
+}
+
+// Course model
+model Course {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  description     String
+  instructor      String
+  thumbnail       String
+  category        String
+  level           String        // beginner, intermediate, advanced
+  duration        String
+  lessons         Int
+  price           String
+  tags            String        // JSON array as string
+  
+  // Statistics
+  rating          Float         @default(0)
+  reviews         Int           @default(0)
+  students        Int           @default(0)
+  
+  // Content
+  curriculum      String        // JSON array as string
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  @@index([slug])
+  @@index([category])
+  @@index([level])
+}
+
+// Learning Path model
+model LearningPath {
+  id              String        @id @default(cuid())
+  name            String
+  slug            String        @unique
+  description     String
+  difficulty      String
+  duration        String
+  totalConcepts   Int
+  color           String
+  prerequisites   String        // JSON array as string
+  concepts        String        // JSON array as string
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  @@index([slug])
+}

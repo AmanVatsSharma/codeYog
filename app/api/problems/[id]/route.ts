@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-// Mock problem data
+// Mock problem data as fallback
 const mockProblem = {
   id: 1,
   title: 'Two Sum',
@@ -60,18 +61,48 @@ export async function GET(
   try {
     const { id } = await params;
     
-    // In production, fetch from database
-    if (id === '1') {
-      return NextResponse.json({
-        success: true,
-        problem: mockProblem,
-      });
+    // Try to find by ID or slug
+    const problem = await prisma.problem.findFirst({
+      where: {
+        OR: [
+          { id: id },
+          { slug: id },
+        ]
+      },
+      include: {
+        _count: {
+          select: {
+            submissions: true,
+            bookmarks: true,
+            discussions: true,
+          }
+        }
+      }
+    });
+
+    if (!problem) {
+      return NextResponse.json(
+        { success: false, error: 'Problem not found' },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Problem not found' },
-      { status: 404 }
-    );
+    // Parse JSON fields
+    const formattedProblem = {
+      ...problem,
+      tags: JSON.parse(problem.tags),
+      companies: JSON.parse(problem.companies),
+      examples: JSON.parse(problem.examples),
+      constraints: JSON.parse(problem.constraints),
+      hints: JSON.parse(problem.hints),
+      testCases: JSON.parse(problem.testCases),
+      starterCode: JSON.parse(problem.starterCode),
+    };
+
+    return NextResponse.json({
+      success: true,
+      problem: formattedProblem,
+    });
   } catch (error) {
     console.error('Error fetching problem:', error);
     return NextResponse.json(
