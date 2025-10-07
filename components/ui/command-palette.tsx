@@ -4,10 +4,18 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const COMMANDS = [
-  { label: 'Go to Dashboard', href: '/dashboard' },
-  { label: 'Browse Problems', href: '/problems' },
-  { label: 'Learning Path', href: '/learning-path-tracker' },
-  { label: 'Admin Dashboard', href: '/admin/dashboard' },
+  { label: 'Go to Dashboard', href: '/dashboard', category: 'Navigation' },
+  { label: 'Browse Problems', href: '/problems', category: 'Navigation' },
+  { label: 'View Contests', href: '/contests', category: 'Navigation' },
+  { label: 'Community Forum', href: '/community', category: 'Navigation' },
+  { label: 'Learning Path', href: '/learning-path-tracker', category: 'Navigation' },
+  { label: 'Video Tutorials', href: '/learn', category: 'Navigation' },
+  { label: 'Code Playground', href: '/playground', category: 'Tools' },
+  { label: 'Leaderboard', href: '/leaderboard', category: 'Social' },
+  { label: 'My Profile', href: '/profile/alexkumar', category: 'Account' },
+  { label: 'Settings', href: '/settings', category: 'Account' },
+  { label: 'Admin Dashboard', href: '/admin/dashboard', category: 'Admin' },
+  { label: 'Code Lab', href: '/tests', category: 'Tools' },
 ];
 
 export function CommandPalette() {

@@ -6,9 +6,10 @@ import { usePathname } from 'next/navigation';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
+import { NotificationsPanel } from '@/components/NotificationsPanel';
 import { cn } from '@/components/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Code, LayoutDashboard, BookOpen, GraduationCap, Sun, Moon, Sparkles, Menu } from 'lucide-react';
+import { Code, LayoutDashboard, BookOpen, GraduationCap, Sun, Moon, Sparkles, Menu, Trophy, Video, MessageSquare, Medal } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 type Props = {
@@ -19,7 +20,11 @@ type Props = {
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/problems', label: 'Problems', icon: BookOpen },
+  { href: '/contests', label: 'Contests', icon: Trophy },
+  { href: '/leaderboard', label: 'Leaderboard', icon: Medal },
+  { href: '/community', label: 'Community', icon: MessageSquare },
   { href: '/learning-path-tracker', label: 'Learning Path', icon: GraduationCap },
+  { href: '/learn', label: 'Learn', icon: Video },
   { href: '/tests', label: 'Code Lab', icon: Code },
 ];
 
@@ -45,6 +50,7 @@ export function AppShell({ children, withSidebar = true }: Props) {
                 <Menu className="w-4 h-4" />
               </Button>
             )}
+            <NotificationsPanel />
             <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               <Sun className="w-4 h-4 hidden dark:block" />
               <Moon className="w-4 h-4 block dark:hidden" />
