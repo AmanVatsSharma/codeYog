@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { cn } from '@/components/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Code, LayoutDashboard, BookOpen, GraduationCap, Sun, Moon, Sparkles, Menu } from 'lucide-react';
+import { Code, LayoutDashboard, BookOpen, GraduationCap, Sun, Moon, Sparkles, Menu, Trophy, Video, MessageSquare } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 type Props = {
@@ -19,7 +19,10 @@ type Props = {
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/problems', label: 'Problems', icon: BookOpen },
+  { href: '/contests', label: 'Contests', icon: Trophy },
+  { href: '/community', label: 'Community', icon: MessageSquare },
   { href: '/learning-path-tracker', label: 'Learning Path', icon: GraduationCap },
+  { href: '/learn', label: 'Learn', icon: Video },
   { href: '/tests', label: 'Code Lab', icon: Code },
 ];
 
